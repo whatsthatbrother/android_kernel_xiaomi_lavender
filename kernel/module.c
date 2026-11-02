@@ -964,6 +964,9 @@ SYSCALL_DEFINE2(delete_module, const char __user *, name_user,
 		return -EFAULT;
 	name[MODULE_NAME_LEN-1] = '\0';
 
+	if (IS_BUILTIN(CONFIG_QCA_CLD_WLAN) && !strcmp(name, "wlan"))
+		return 0;
+
 	if (mutex_lock_interruptible(&module_mutex) != 0)
 		return -EINTR;
 
@@ -3681,6 +3684,26 @@ SYSCALL_DEFINE3(init_module, void __user *, umod,
 	return load_module(&info, uargs, 0);
 }
 
+/*
+ * The ROM's WiFi HAL insmods its own wlan.ko and gives up when that fails. Here the
+ * driver is built in, so report success without loading anything.
+ */
+static bool is_builtin_wlan_fd(int fd)
+{
+	bool ret = false;
+
+	if (IS_BUILTIN(CONFIG_QCA_CLD_WLAN)) {
+		struct fd f = fdget(fd);
+
+		if (f.file) {
+			ret = !strcmp(f.file->f_path.dentry->d_name.name,
+				      "qca_cld3_wlan.ko");
+			fdput(f);
+		}
+	}
+	return ret;
+}
+
 SYSCALL_DEFINE3(finit_module, int, fd, const char __user *, uargs, int, flags)
 {
 	int err;
@@ -3695,6 +3718,9 @@ SYSCALL_DEFINE3(finit_module, int, fd, const char __user *, uargs, int, flags)
 	if (flags & ~(MODULE_INIT_IGNORE_MODVERSIONS
 		      |MODULE_INIT_IGNORE_VERMAGIC))
 		return -EINVAL;
+
+	if (is_builtin_wlan_fd(fd))
+		return 0;
 
 	err = copy_module_from_fd(fd, &info);
 	if (err)
