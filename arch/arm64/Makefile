@@ -41,6 +41,9 @@ KBUILD_CFLAGS	+= $(lseinstr)
 KBUILD_CFLAGS	+= -fno-pic
 KBUILD_CFLAGS	+= $(call cc-option, -mpc-relative-literal-loads)
 KBUILD_CFLAGS	+= -fno-asynchronous-unwind-tables
+# Vendor drivers write __iomem structs directly. GCC 7+ merges those stores into
+# one wider access, which is unaligned and faults on device memory (smp2p, SMEM).
+KBUILD_CFLAGS	+= $(call cc-option,-fno-store-merging)
 KBUILD_AFLAGS	+= $(lseinstr)
 
 ifeq ($(CONFIG_CPU_BIG_ENDIAN), y)
