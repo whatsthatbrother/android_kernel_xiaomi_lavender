@@ -106,9 +106,8 @@ endif
 
 KBUILD_DTBS	:= dtbs
 
-ifeq ($(CONFIG_BUILD_ARM64_DT_OVERLAY),y)
+# The bootloader applies the dtbo partition on top of these, which needs __symbols__.
 export DTC_FLAGS := -@
-endif
 
 all:	$(KBUILD_IMAGE) $(KBUILD_DTBS)
 
