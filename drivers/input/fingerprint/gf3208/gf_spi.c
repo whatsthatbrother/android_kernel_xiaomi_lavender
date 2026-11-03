@@ -78,6 +78,7 @@ static DEFINE_MUTEX(device_list_lock);
 static struct wake_lock fp_wakelock;
 static struct gf_dev gf;
 static struct proc_dir_entry *proc_entry;
+extern int fpsensor;
 
 #if 0
 static struct gf_key_map maps[] = {
@@ -940,6 +941,11 @@ static struct platform_driver gf_driver = {
 static int __init gf_init(void)
 {
 	int status;
+
+	if (fpsensor != 2) {
+		pr_info("gf3208: skipped, fpsensor=%d (2=goodix)\n", fpsensor);
+		return 0;
+	}
 
 	/* Claim our 256 reserved device numbers.  Then register a class
 	 * that will key udev/mdev to add/remove /dev nodes.  Last, register
