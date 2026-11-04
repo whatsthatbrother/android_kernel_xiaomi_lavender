@@ -902,7 +902,7 @@ irqreturn_t cmdq_irq(struct mmc_host *mmc, int err)
 	unsigned long tag = 0, comp_status;
 	struct cmdq_host *cq_host = (struct cmdq_host *)mmc_cmdq_private(mmc);
 	unsigned long err_info = 0;
-	struct mmc_request *mrq;
+	struct mmc_request *mrq = NULL;
 	int ret;
 	u32 dbr_set = 0;
 	u32 dev_pend_set = 0;
@@ -1030,11 +1030,12 @@ skip_cqterri:
 			    mmc_card_configured_auto_bkops(mmc->card))
 				mmc->card->bkops.needs_check = true;
 
-			mrq->cmdq_req->resp_err = true;
+			if (mrq)
+				mrq->cmdq_req->resp_err = true;
 			pr_err("%s: Response error (0x%08x) from card !!!",
 				mmc_hostname(mmc), cmdq_readl(cq_host, CQCRA));
 
-		} else {
+		} else if (mrq) {
 			mrq->cmdq_req->resp_idx = cmdq_readl(cq_host, CQCRI);
 			mrq->cmdq_req->resp_arg = cmdq_readl(cq_host, CQCRA);
 		}
@@ -1044,7 +1045,7 @@ skip_cqterri:
 		 * Its a fatal, would require cmdq reset.
 		 */
 		if (stat_err & CQIS_GCE) {
-			if (mrq->data)
+			if (mrq && mrq->data)
 				mrq->data->error = -EIO;
 			pr_err("%s: Crypto generic error while processing task %lu!",
 				mmc_hostname(mmc), tag);
