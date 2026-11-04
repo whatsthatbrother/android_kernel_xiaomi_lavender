@@ -7062,7 +7062,7 @@ int wlan_hdd_update_phymode(struct net_device *net, tHalHandle hal,
 				phddctx->config->Is11hSupportEnabled;
 		if (curr_band == SIR_BAND_2_4_GHZ)
 			sme_config->csrConfig.channelBondingMode24GHz = chwidth;
-		else if (curr_band == SIR_BAND_2_4_GHZ)
+		else if (curr_band == SIR_BAND_5_GHZ)
 			sme_config->csrConfig.channelBondingMode5GHz = chwidth;
 		else {
 			sme_config->csrConfig.channelBondingMode24GHz = chwidth;

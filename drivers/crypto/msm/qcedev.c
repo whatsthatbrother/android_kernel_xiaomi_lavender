@@ -1560,7 +1560,7 @@ static int qcedev_check_sha_params(struct qcedev_sha_op_req *req,
 		goto sha_error;
 	}
 	if ((req->alg == QCEDEV_ALG_SHA1_HMAC) ||
-			(req->alg == QCEDEV_ALG_SHA1_HMAC)) {
+			(req->alg == QCEDEV_ALG_SHA256_HMAC)) {
 		if (req->authkey == NULL) {
 			pr_err("%s: Invalid authkey pointer\n", __func__);
 			goto sha_error;
