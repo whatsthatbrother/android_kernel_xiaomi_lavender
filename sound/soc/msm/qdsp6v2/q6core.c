@@ -446,8 +446,13 @@ int q6core_get_service_version(uint32_t service_id,
 
 	ret = q6core_get_fwk_version_size(service_id);
 	if (ret < 0) {
-		pr_err("%s: Failed to get service size for service id %d with error %d\n",
-		       __func__, service_id, ret);
+		/* Older ADSP firmware has no version query; callers cope with it */
+		if (ret == -EOPNOTSUPP)
+			pr_debug("%s: version query unsupported by ADSP\n",
+				 __func__);
+		else
+			pr_err("%s: Failed to get service size for service id %d with error %d\n",
+			       __func__, service_id, ret);
 		return ret;
 	}
 

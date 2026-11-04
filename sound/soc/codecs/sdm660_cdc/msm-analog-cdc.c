@@ -1637,11 +1637,11 @@ static int msm_anlg_cdc_pa_gain_get(struct snd_kcontrol *kcontrol,
 		if (ear_pa_gain == 0x00) {
 			ucontrol->value.integer.value[0] = 3;
 		} else if (ear_pa_gain == 0x01) {
-			ucontrol->value.integer.value[1] = 2;
+			ucontrol->value.integer.value[0] = 2;
 		} else if (ear_pa_gain == 0x02) {
-			ucontrol->value.integer.value[2] = 1;
+			ucontrol->value.integer.value[0] = 1;
 		} else if (ear_pa_gain == 0x03) {
-			ucontrol->value.integer.value[3] = 0;
+			ucontrol->value.integer.value[0] = 0;
 		} else {
 			dev_err(codec->dev,
 				"%s: ERROR: Unsupported Ear Gain = 0x%x\n",
@@ -1663,7 +1663,6 @@ static int msm_anlg_cdc_pa_gain_get(struct snd_kcontrol *kcontrol,
 			return -EINVAL;
 		}
 	}
-	ucontrol->value.integer.value[0] = ear_pa_gain;
 	dev_dbg(codec->dev, "%s: ear_pa_gain = 0x%x\n", __func__, ear_pa_gain);
 	return 0;
 }
@@ -3344,7 +3343,7 @@ static int msm_anlg_cdc_codec_enable_ear_pa(struct snd_soc_dapm_widget *w,
 	struct snd_soc_codec *codec = snd_soc_dapm_to_codec(w->dapm);
 	struct sdm660_cdc_priv *sdm660_cdc =
 					snd_soc_codec_get_drvdata(codec);
-	pr_info("Macle msm_anlg_cdc_codec_enable_ear_pa event = %d\n", event);
+	pr_debug("%s: event = %d\n", __func__, event);
 	switch (event) {
 	case SND_SOC_DAPM_PRE_PMU:
 		dev_dbg(codec->dev,

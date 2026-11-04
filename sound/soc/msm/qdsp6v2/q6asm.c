@@ -2051,7 +2051,7 @@ static int32_t q6asm_callback(struct apr_client_data *data, void *priv)
 					&(session[session_id].session_lock),
 					flags);
 				return 0;
-			} else {
+			} else if (data->payload_size < 2 * sizeof(uint32_t)) {
 				pr_err("%s: payload size of %x is less than expected.\n",
 					__func__, data->payload_size);
 			}
