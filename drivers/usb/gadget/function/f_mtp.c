@@ -419,7 +419,9 @@ static struct usb_request *mtp_request_new(struct usb_ep *ep, int buffer_size)
 		return NULL;
 
 	/* now allocate buffers for the requests */
-	req->buf = kmalloc(buffer_size, GFP_KERNEL);
+	/* Large buffers may fail on fragmented memory; bind retries smaller */
+	req->buf = kmalloc(buffer_size, buffer_size > MTP_BULK_BUFFER_SIZE ?
+			   GFP_KERNEL | __GFP_NOWARN : GFP_KERNEL);
 	if (!req->buf) {
 		usb_ep_free_request(ep, req);
 		return NULL;
@@ -563,8 +565,10 @@ retry_tx_alloc:
 				goto fail;
 			while ((req = mtp_req_get(dev, &dev->tx_idle)))
 				mtp_request_free(req, dev->ep_in);
-			mtp_tx_req_len = MTP_BULK_BUFFER_SIZE;
+			mtp_tx_req_len = max_t(unsigned int, mtp_tx_req_len / 2,
+					       MTP_BULK_BUFFER_SIZE);
 			mtp_tx_reqs = MTP_TX_REQ_MAX;
+			pr_info("mtp: tx buffer reduced to %u\n", mtp_tx_req_len);
 			goto retry_tx_alloc;
 		}
 		req->complete = mtp_complete_in;
@@ -588,7 +592,9 @@ retry_rx_alloc:
 				goto fail;
 			for (--i; i >= 0; i--)
 				mtp_request_free(dev->rx_req[i], dev->ep_out);
-			mtp_rx_req_len = MTP_BULK_BUFFER_SIZE;
+			mtp_rx_req_len = max_t(unsigned int, mtp_rx_req_len / 2,
+					       MTP_BULK_BUFFER_SIZE);
+			pr_info("mtp: rx buffer reduced to %u\n", mtp_rx_req_len);
 			goto retry_rx_alloc;
 		}
 		req->complete = mtp_complete_out;
